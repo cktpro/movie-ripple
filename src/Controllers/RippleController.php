@@ -1,17 +1,17 @@
 <?php
 
-namespace Ophim\Ripple\Controllers;
+namespace Movie\Ripple\Controllers;
 
 use Backpack\Settings\app\Models\Setting;
 use Illuminate\Http\Request;
-use Ophim\Core\Models\Actor;
-use Ophim\Core\Models\Catalog;
-use Ophim\Core\Models\Category;
-use Ophim\Core\Models\Director;
-use Ophim\Core\Models\Episode;
-use Ophim\Core\Models\Movie;
-use Ophim\Core\Models\Region;
-use Ophim\Core\Models\Tag;
+use Movie\Core\Models\Actor;
+use Movie\Core\Models\Catalog;
+use Movie\Core\Models\Category;
+use Movie\Core\Models\Director;
+use Movie\Core\Models\Episode;
+use Movie\Core\Models\Movie;
+use Movie\Core\Models\Region;
+use Movie\Core\Models\Tag;
 
 use Illuminate\Support\Facades\Cache;
 
@@ -266,7 +266,7 @@ class RippleController
 
             [$relation_table, $relation_field, $relation_val] = array_merge($relation_config, ['', '', '']);
             try {
-                $movies = \Ophim\Core\Models\Movie::when($relation_table, function ($query) use ($relation_table, $relation_field, $relation_val, $field, $val) {
+                $movies = \Movie\Core\Models\Movie::when($relation_table, function ($query) use ($relation_table, $relation_field, $relation_val, $field, $val) {
                     $query->whereHas($relation_table, function ($rel) use ($relation_field, $relation_val, $field, $val) {
                         $rel->where($relation_field, $relation_val)->where(array_combine(explode(",", $field), explode(",", $val)));
                     });

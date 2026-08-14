@@ -1,6 +1,6 @@
 {
-    "name": "roxone/ophim-ripple",
-    "description": "Ophim's ripple theme",
+    "name": "roxone/movie-ripple",
+    "description": "Movie CMS ripple theme",
     "type": "library",
     "authors": [
         {
@@ -11,20 +11,20 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-        "roxone/ophim-core": "dev-main"
+        "roxone/movie-core": "dev-main"
     },
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Ophim\\Ripple\\": "src/",
-            "Ophim\\Ripple\\Database\\Factories\\": "database/factories/",
-            "Ophim\\Ripple\\Database\\Seeders\\": "database/seeders/"
+            "Movie\\Ripple\\": "src/",
+            "Movie\\Ripple\\Database\\Factories\\": "database/factories/",
+            "Movie\\Ripple\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Ophim\\Ripple\\RippleServiceProvider"
+                "Movie\\Ripple\\RippleServiceProvider"
             ]
         }
     },

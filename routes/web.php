@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Ophim\Ripple\Controllers\RippleController;
+use Movie\Ripple\Controllers\RippleController;
 
 // --------------------------
 // Custom Backpack Routes
@@ -48,7 +48,7 @@ Route::group([
         ->where(['movie' => '.+', 'movie_id' => '[0-9]+', 'episode' => '.+', 'id' => '[0-9]+'])
         ->name('episodes.report');
 
-    Route::post(sprintf('/%s/{movie}/{episode}/rate', config('ophim.routes.movie', 'phim')), [RippleController::class, 'rateMovie'])
+    Route::post(sprintf('/%s/{movie}/{episode}/rate', config('movie.routes.movie', 'phim')), [RippleController::class, 'rateMovie'])
         ->name('movie.rating');
 
     Route::get(setting('site_routes_movie', '/phim/{movie}'), [RippleController::class, 'getMovieOverview'])

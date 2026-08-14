@@ -1,6 +1,6 @@
 <?php
 
-namespace Ophim\Ripple;
+namespace Movie\Ripple;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -26,7 +26,7 @@ class RippleServiceProvider extends ServiceProvider
             'ripple' => [
                 'name' => 'Ripple',
                 'author' => 'hacoi.dev@gmail.com',
-                'package_name' => 'roxone/ophim-ripple',
+                'package_name' => 'roxone/movie-ripple',
                 'publishes' => ['ripple-assets'],
                 'preview_image' => '',
                 'options' => [

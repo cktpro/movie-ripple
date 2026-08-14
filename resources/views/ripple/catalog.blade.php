@@ -2,7 +2,7 @@
 
 @php
 $years = Cache::remember('all_years', \Backpack\Settings\app\Models\Setting::get('site_cache_ttl', 5 * 60), function () {
-    return \Ophim\Core\Models\Movie::select('publish_year')
+    return \Movie\Core\Models\Movie::select('publish_year')
         ->distinct()
         ->pluck('publish_year')
         ->sortDesc();
@@ -58,7 +58,7 @@ $years = Cache::remember('all_years', \Backpack\Settings\app\Models\Setting::get
                 <select name="filter[category]" form="form-search"
                     class="bg-black border border-black text-gray-300 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-1">
                     <option value="">Tất cả thể loại</option>
-                    @foreach (Cache::remember('all_categories', \Backpack\Settings\app\Models\Setting::get('site_cache_ttl', 5 * 60), fn() => \Ophim\Core\Models\Category::all()) as $item)
+                    @foreach (Cache::remember('all_categories', \Backpack\Settings\app\Models\Setting::get('site_cache_ttl', 5 * 60), fn() => \Movie\Core\Models\Category::all()) as $item)
                         <option value="{{ $item->id }}" @if ((isset(request('filter')['category']) && request('filter')['category'] == $item->id) ||
                             (isset($category) && $category->id == $item->id)) selected @endif>
                             {{ $item->name }}</option>
@@ -69,7 +69,7 @@ $years = Cache::remember('all_years', \Backpack\Settings\app\Models\Setting::get
                 <select name="filter[region]" form="form-search"
                     class="bg-black border border-black text-gray-300 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-1">
                     <option value="">Tất cả quốc gia</option>
-                    @foreach (Cache::remember('all_regions', \Backpack\Settings\app\Models\Setting::get('site_cache_ttl', 5 * 60), fn() => \Ophim\Core\Models\Region::all()) as $item)
+                    @foreach (Cache::remember('all_regions', \Backpack\Settings\app\Models\Setting::get('site_cache_ttl', 5 * 60), fn() => \Movie\Core\Models\Region::all()) as $item)
                         <option value="{{ $item->id }}" @if ((isset(request('filter')['region']) && request('filter')['region'] == $item->id) ||
                             (isset($region) && $region->id == $item->id)) selected @endif>
                             {{ $item->name }}</option>
