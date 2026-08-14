@@ -1,5 +1,5 @@
 {
-    "name": "hacoidev/ophim-ripple",
+    "name": "roxone/ophim-ripple",
     "description": "Ophim's ripple theme",
     "type": "library",
     "authors": [
@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-        "hacoidev/ophim-core": "dev-main"
+        "roxone/ophim-core": "dev-main"
     },
     "license": "MIT",
     "autoload": {
