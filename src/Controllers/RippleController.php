@@ -297,10 +297,17 @@ class RippleController
             return null;
         }
 
+        // Các route (movie, category, region, actor, director, tag, catalog) truyền
+        // vào đây giá trị SLUG lấy từ URL, không phải khóa chính `id`. Model::find($id)
+        // tra theo khóa chính sẽ sai (MySQL ép kiểu chuỗi "1st-kiss" thành số 1) — phải
+        // tra theo cột do chính model khai báo qua primaryCacheKey(), đúng như cách
+        // hacoidev/laravel-caching-model đã làm trước khi bị gỡ bỏ.
+        $key = method_exists($modelClass, 'primaryCacheKey') ? $modelClass::primaryCacheKey() : 'id';
+
         return Cache::remember(
-            'ripple_find:' . $modelClass . ':' . $id,
+            'ripple_find:' . $modelClass . ':' . $key . ':' . $id,
             setting('site_cache_ttl', 5 * 60),
-            fn () => $modelClass::find($id)
+            fn () => $modelClass::where($key, $id)->first()
         );
     }
 }
