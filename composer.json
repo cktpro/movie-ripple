@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
-        "hacoidev/ophim-core": "^1.1.0"
+        "hacoidev/ophim-core": "dev-main"
     },
     "license": "MIT",
     "autoload": {
