@@ -66,7 +66,7 @@ class RippleController
     public function getMovieOverview(Request $request)
     {
         /** @var Movie */
-        $movie = Movie::fromCache()->find($request->movie ?: $request->id);
+        $movie = static::cachedFind(Movie::class, $request->movie ?: $request->id);
 
         if (is_null($movie)) abort(404);
 
@@ -93,7 +93,7 @@ class RippleController
 
     public function getEpisode(Request $request)
     {
-        $movie = Movie::fromCache()->find($request->movie ?: $request->movie_id)->load('episodes');
+        $movie = static::cachedFind(Movie::class, $request->movie ?: $request->movie_id)->load('episodes');
 
         if (is_null($movie)) abort(404);
 
@@ -129,7 +129,7 @@ class RippleController
 
     public function reportEpisode(Request $request, $movie, $slug, $id)
     {
-        $movie = Movie::fromCache()->find($movie)->load('episodes');
+        $movie = static::cachedFind(Movie::class, $movie)->load('episodes');
 
         $episode = $movie->episodes->when($id, function ($collection, $id) {
             return $collection->where('id', $id);
@@ -145,7 +145,7 @@ class RippleController
 
     public function rateMovie(Request $request, $movie, $slug)
     {
-        $movie = Movie::fromCache()->find($movie)->load('episodes');
+        $movie = static::cachedFind(Movie::class, $movie)->load('episodes');
 
         $movie->refresh()->increment('rating_count', 1, [
             'rating_star' => $movie->rating_star +  ((int) request('rating') - $movie->rating_star) / ($movie->rating_count + 1)
@@ -157,7 +157,7 @@ class RippleController
     public function getMovieOfCategory(Request $request)
     {
         /** @var Category */
-        $category = Category::fromCache()->find($request->category ?: $request->id);
+        $category = static::cachedFind(Category::class, $request->category ?: $request->id);
 
         if (is_null($category)) abort(404);
 
@@ -176,7 +176,7 @@ class RippleController
     public function getMovieOfRegion(Request $request)
     {
         /** @var Region */
-        $region = Region::fromCache()->find($request->region ?: $request->id);
+        $region = static::cachedFind(Region::class, $request->region ?: $request->id);
 
         if (is_null($region)) abort(404);
 
@@ -195,7 +195,7 @@ class RippleController
     public function getMovieOfActor(Request $request)
     {
         /** @var Actor */
-        $actor = Actor::fromCache()->find($request->actor ?: $request->id);
+        $actor = static::cachedFind(Actor::class, $request->actor ?: $request->id);
 
         if (is_null($actor)) abort(404);
 
@@ -214,7 +214,7 @@ class RippleController
     public function getMovieOfDirector(Request $request)
     {
         /** @var Director */
-        $director = Director::fromCache()->find($request->director ?: $request->id);
+        $director = static::cachedFind(Director::class, $request->director ?: $request->id);
 
         if (is_null($director)) abort(404);
 
@@ -233,7 +233,7 @@ class RippleController
     public function getMovieOfTag(Request $request)
     {
         /** @var Tag */
-        $tag = Tag::fromCache()->find($request->tag ?: $request->id);
+        $tag = static::cachedFind(Tag::class, $request->tag ?: $request->id);
 
         if (is_null($tag)) abort(404);
 
@@ -251,7 +251,7 @@ class RippleController
     public function getMovieOfType(Request $request)
     {
         /** @var Catalog */
-        $catalog = Catalog::fromCache()->find($request->type ?: $request->id);
+        $catalog = static::cachedFind(Catalog::class, $request->type ?: $request->id);
 
         if (is_null($catalog)) abort(404);
 
@@ -284,5 +284,23 @@ class RippleController
             'data' => $movies,
             'section_name' => "Danh sách $catalog->name"
         ]);
+    }
+
+    /**
+     * Thay cho Model::fromCache()->find($id) của package hacoidev/laravel-caching-model
+     * (đã bỏ khi nâng cấp Laravel 12). Cache không tự invalidate khi model được sửa qua
+     * CRUD admin — chấp nhận độ trễ tối đa site_cache_ttl, giống các cache khác trong file này.
+     */
+    protected static function cachedFind(string $modelClass, $id)
+    {
+        if (empty($id)) {
+            return null;
+        }
+
+        return Cache::remember(
+            'ripple_find:' . $modelClass . ':' . $id,
+            setting('site_cache_ttl', 5 * 60),
+            fn () => $modelClass::find($id)
+        );
     }
 }
