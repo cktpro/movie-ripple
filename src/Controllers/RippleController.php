@@ -77,12 +77,7 @@ class RippleController
         $movie->increment('view_week', 1);
         $movie->increment('view_month', 1);
 
-        $movie_related_cache_key = 'movie_related:' . $movie->id;
-        $movie_related = Cache::get($movie_related_cache_key);
-        if(is_null($movie_related)) {
-            $movie_related = $movie->categories[0]->movies()->inRandomOrder()->limit(get_theme_option('movie_related_limit', 10))->get();
-            Cache::put($movie_related_cache_key, $movie_related, setting('site_cache_ttl', 5 * 60));
-        }
+        $movie_related = static::relatedMovies($movie);
 
         return view('themes::ripple.single', [
             'currentMovie' => $movie,
@@ -93,9 +88,11 @@ class RippleController
 
     public function getEpisode(Request $request)
     {
-        $movie = static::cachedFind(Movie::class, $request->movie ?: $request->movie_id)->load('episodes');
+        $movie = static::cachedFind(Movie::class, $request->movie ?: $request->movie_id);
 
         if (is_null($movie)) abort(404);
+
+        $movie->load('episodes');
 
         /** @var Episode */
         $episode_id = $request->id;
@@ -112,12 +109,7 @@ class RippleController
         $movie->increment('view_week', 1);
         $movie->increment('view_month', 1);
 
-        $movie_related_cache_key = 'movie_related:' . $movie->id;
-        $movie_related = Cache::get($movie_related_cache_key);
-        if(is_null($movie_related)) {
-            $movie_related = $movie->categories[0]->movies()->inRandomOrder()->limit(get_theme_option('movie_related_limit', 10))->get();
-            Cache::put($movie_related_cache_key, $movie_related, setting('site_cache_ttl', 5 * 60));
-        }
+        $movie_related = static::relatedMovies($movie);
 
         return view('themes::ripple.episode', [
             'currentMovie' => $movie,
@@ -129,11 +121,15 @@ class RippleController
 
     public function reportEpisode(Request $request, $movie, $slug, $id)
     {
-        $movie = static::cachedFind(Movie::class, $movie)->load('episodes');
+        $movie = static::cachedFind(Movie::class, $movie);
 
-        $episode = $movie->episodes->when($id, function ($collection, $id) {
+        if (is_null($movie)) abort(404);
+
+        $episode = $movie->load('episodes')->episodes->when($id, function ($collection, $id) {
             return $collection->where('id', $id);
         })->firstWhere('slug', $slug);
+
+        if (is_null($episode)) abort(404);
 
         $episode->update([
             'report_message' => request('message', ''),
@@ -145,7 +141,9 @@ class RippleController
 
     public function rateMovie(Request $request, $movie, $slug)
     {
-        $movie = static::cachedFind(Movie::class, $movie)->load('episodes');
+        $movie = static::cachedFind(Movie::class, $movie);
+
+        if (is_null($movie)) abort(404);
 
         $movie->refresh()->increment('rating_count', 1, [
             'rating_star' => $movie->rating_star +  ((int) request('rating') - $movie->rating_star) / ($movie->rating_count + 1)
@@ -284,6 +282,33 @@ class RippleController
             'data' => $movies,
             'section_name' => "Danh sách $catalog->name"
         ]);
+    }
+
+    /**
+     * Danh sách phim liên quan, lấy theo thể loại đầu tiên của phim.
+     *
+     * Phim KHÔNG có thể loại nào là chuyện có thật trong DB (crawler bỏ qua nhánh
+     * taxonomy khi payload API thiếu) — bản cũ viết thẳng $movie->categories[0] nên
+     * những phim đó ném "Undefined array key 0"; PHP 8 + HandleExceptions biến warning
+     * này thành ErrorException, làm trang phim trả 500 thay vì hiện ra không có phim
+     * liên quan. Trả về collection rỗng cho trường hợp đó — view đã @foreach an toàn.
+     */
+    protected static function relatedMovies(Movie $movie)
+    {
+        $cache_key = 'movie_related:' . $movie->id;
+        $movie_related = Cache::get($cache_key);
+
+        if (is_null($movie_related)) {
+            $category = $movie->categories->first();
+
+            $movie_related = is_null($category)
+                ? collect()
+                : $category->movies()->inRandomOrder()->limit(get_theme_option('movie_related_limit', 10))->get();
+
+            Cache::put($cache_key, $movie_related, setting('site_cache_ttl', 5 * 60));
+        }
+
+        return $movie_related;
     }
 
     /**
